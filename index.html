@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LH Rebooking Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#171c20;
+  --bg-soft:#1b2126;
+  --card:#20282e;
+  --surface:#27323a;
+  --surface-2:#2b3740;
+  --border:#34414b;
+  --border-soft:rgba(255,255,255,0.04);
+  --border-hi:#738b9b;
+  --accent:#d6b06a;
+  --accent-strong:#e2bf7c;
+  --accent-dim:rgba(214,176,106,0.12);
+  --accent-glow:rgba(214,176,106,0.18);
+  --text:#ece6da;
+  --text-strong:#f4eee4;
+  --muted:#b2b7bb;
+  --dim:#8b949c;
+  --success:#81c995;
+  --success-dim:rgba(129,201,149,0.14);
+  --danger:#e5968b;
+  --danger-dim:rgba(229,150,139,0.12);
+  --warn:#d8b36d;
+  --warn-dim:rgba(216,179,109,0.12);
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'Noto Sans KR',sans-serif;
+  --radius:14px;
+  --shadow-soft:0 10px 30px rgba(0,0,0,0.18);
+  --shadow-card:0 16px 36px rgba(0,0,0,0.16);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+body{
+  background:
+    radial-gradient(circle at top right, rgba(214,176,106,0.04), transparent 26%),
+    linear-gradient(180deg, #1a1f24 0%, #171c20 100%);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  padding-bottom:80px;
+  line-height:1.62;
+  letter-spacing:0.01em;
+}
+header{
+  background:rgba(23,28,32,0.92);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 6px 24px rgba(0,0,0,0.14);
+  padding:0 32px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:100
+}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-icon{
+  width:34px;height:34px;
+  background:linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color:#2b2114;
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+  box-shadow:0 6px 18px rgba(214,176,106,0.18)
+}
+.logo-text{
+  font-family:var(--mono);
+  font-size:14px;
+  font-weight:600;
+  color:var(--text-strong);
+  letter-spacing:1.6px;
+  text-transform:uppercase
+}
+.logo-sub{font-size:11px;color:var(--muted);letter-spacing:.8px;margin-top:2px}
+.rate-pill{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:8px 14px 8px 12px;
+  box-shadow:var(--shadow-soft)
+}
+.rate-dot{width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 4px rgba(216,179,109,0.10)}
+.rate-text{font-family:var(--mono);font-size:12.5px;color:var(--text-strong)}
+.rate-input{
+  width:76px;background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text-strong);
+  padding:4px 8px;border-radius:7px;
+  font-family:var(--mono);font-size:13px;
+  text-align:center;font-weight:600
+}
+.rate-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:30px}
+.section-label{
+  font-family:var(--mono);
+  font-size:10.5px;
+  font-weight:600;
+  letter-spacing:2.4px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:10px
+}
+.section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.inputs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.input-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01)), var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  transition:border-color .2s,transform .15s,box-shadow .2s;
+  display:flex;flex-direction:column;
+  box-shadow:var(--shadow-card)
+}
+.input-card:hover{border-color:#4b5b67;transform:translateY(-1px)}
+.input-card:focus-within{border-color:var(--border-hi);box-shadow:0 0 0 3px var(--accent-dim), var(--shadow-card)}
+.ic-header{
+  background:rgba(255,255,255,0.018);
+  border-bottom:1px solid var(--border);
+  padding:12px 15px;
+  display:flex;align-items:center;gap:11px
+}
+.ic-num{
+  width:24px;height:24px;
+  background:linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color:#2c2115;
+  font-family:var(--mono);
+  font-size:11px;font-weight:700;
+  border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0
+}
+.ic-clear{
+  margin-left:auto;background:rgba(255,255,255,0.015);
+  border:1px solid var(--border);
+  color:var(--muted);
+  font-size:11px;cursor:pointer;
+  padding:4px 8px;border-radius:7px;
+  font-family:var(--mono);
+  transition:all .15s;letter-spacing:.2px
+}
+.ic-clear:hover{color:var(--danger);border-color:rgba(229,150,139,0.35);background:var(--danger-dim)}
+.ic-title{font-size:14.5px;font-weight:700;line-height:1.38;color:var(--text-strong)}
+.ic-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+.input-card textarea{
+  width:100%;flex:1;background:transparent;border:none;color:var(--text-strong);
+  padding:14px 15px;font-family:var(--mono);font-size:11px;font-weight:500;
+  line-height:2.02;resize:vertical;min-height:208px;
+  caret-color:var(--accent-strong)
+}
+.input-card textarea:focus{outline:none}
+.input-card textarea::placeholder{color:#98a2aa;opacity:1}
+.calc-btn{
+  width:100%;
+  background:linear-gradient(180deg, var(--accent-strong), var(--accent));
+  color:#2b2114;border:none;border-radius:16px;padding:17px 18px;
+  font-family:var(--sans);font-size:16px;font-weight:800;letter-spacing:.01em;
+  cursor:pointer;margin-bottom:30px;transition:filter .2s,transform .1s,box-shadow .2s;
+  box-shadow:0 8px 24px var(--accent-glow)
+}
+.calc-btn:hover{filter:brightness(1.03)}
+.calc-btn:active{transform:scale(.995)}
+.banner{
+  border-radius:14px;padding:16px 20px;margin-bottom:16px;
+  font-size:15px;font-weight:700;display:flex;align-items:center;gap:12px;
+  line-height:1.6;box-shadow:var(--shadow-soft)
+}
+.banner.ok{background:var(--success-dim);border:1px solid rgba(129,201,149,0.28);color:var(--success)}
+.banner.fail{background:var(--danger-dim);border:1px solid rgba(229,150,139,0.28);color:var(--danger)}
+.results-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008)), var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 22px;
+  box-shadow:var(--shadow-card)
+}
+.card-title{
+  font-family:var(--mono);
+  font-size:11.5px;
+  font-weight:700;
+  letter-spacing:2.4px;
+  text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:18px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+  line-height:1.7
+}
+.fare-tbl{width:100%;border-collapse:collapse}
+.fare-tbl th{
+  font-family:var(--sans);
+  font-size:13.5px;
+  letter-spacing:.01em;
+  text-transform:none;
+  color:var(--text-strong);
+  font-weight:700;
+  text-align:right;
+  padding:0 10px 12px;
+  line-height:1.65;
+  white-space:nowrap
+}
+.fare-tbl th:first-child{text-align:left}
+.fare-tbl td{
+  font-family:var(--sans);
+  font-size:15.5px;
+  padding:13px 10px;
+  border-top:1px solid var(--border-soft);
+  text-align:right;
+  line-height:1.72;
+  font-weight:600;
+  color:var(--text-strong)
+}
+.fare-tbl td:first-child{
+  text-align:left;
+  color:var(--muted);
+  font-size:14px;
+  letter-spacing:0;
+  font-weight:700
+}
+.fare-tbl .nv{color:var(--accent-strong);font-size:17px;font-weight:800}
+.chip{
+  display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;
+  font-size:11.5px;font-family:var(--sans);font-weight:700;line-height:1.3
+}
+.chip.ok{background:var(--success-dim);color:var(--success);border:1px solid rgba(129,201,149,0.24)}
+.chip.fail{background:var(--danger-dim);color:var(--danger);border:1px solid rgba(229,150,139,0.24)}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.ir{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border-soft);gap:14px;line-height:1.72
+}
+.ir:last-child{border-bottom:none}
+.il{color:var(--muted);font-size:13.5px;flex-shrink:0;font-weight:600;line-height:1.7}
+.iv{font-family:var(--mono);font-size:14px;text-align:right;color:var(--text-strong);line-height:1.7;font-weight:600}
+.iv.hi{color:var(--accent-strong);font-size:18px;font-weight:800}
+.remark-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008)), var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow-card)
+}
+.remark-grid{display:grid;gap:10px}
+.rr{
+  display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;padding:13px 15px;transition:border-color .2s,background .2s;
+  line-height:1.72
+}
+.rr:hover{border-color:var(--border-hi);background:var(--surface-2)}
+.rk{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--accent-strong);text-align:center}
+.rv{font-family:var(--mono);font-size:14px;color:var(--text-strong);word-break:break-all;line-height:1.8;font-weight:600}
+.rd{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.02em;line-height:1.55}
+.rr-j{align-items:start}
+.jw{display:flex;gap:28px;flex-wrap:wrap}
+.ji .jl{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;font-family:var(--mono);line-height:1.5}
+.ji .jv{font-family:var(--mono);font-size:14px;color:var(--text-strong);line-height:1.7;font-weight:600}
+.ji .jv.ttl{color:var(--accent-strong);font-size:18px;font-weight:800}
+.jb{display:flex;flex-direction:column;gap:7px;align-self:start;margin-top:2px}
+.cb{
+  background:rgba(255,255,255,0.015);border:1px solid var(--border);color:var(--text);
+  padding:7px 13px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;
+  font-family:var(--sans);transition:all .2s;white-space:nowrap
+}
+.cb:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-dim)}
+.cb.done{border-color:var(--success);color:var(--success)}
+.error-card{
+  background:var(--danger-dim);border:1px solid rgba(229,150,139,0.28);border-radius:var(--radius);
+  padding:20px 22px;margin-bottom:14px;box-shadow:var(--shadow-soft)
+}
+.error-title{color:var(--danger);font-weight:800;font-size:15px;margin-bottom:11px;line-height:1.6}
+.error-list{list-style:none}
+.error-list li{color:var(--danger);font-size:14px;padding:5px 0 5px 16px;position:relative;line-height:1.72}
+.error-list li::before{content:'\2192';position:absolute;left:0;color:var(--danger)}
+.manual-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008)), var(--card);
+  border:1px solid rgba(216,179,109,0.34);border-radius:var(--radius);padding:20px 22px;margin-bottom:14px;
+  box-shadow:var(--shadow-card)
+}
+.manual-warn{
+  background:var(--warn-dim);border:1px solid rgba(216,179,109,0.3);border-radius:8px;
+  padding:11px 14px;color:var(--warn);font-size:13px;margin-bottom:16px;line-height:1.65;font-weight:700
+}
+.manual-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.manual-field label{display:block;font-size:11px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;margin-bottom:6px;line-height:1.5}
+.manual-field input{
+  width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text-strong);
+  padding:10px 11px;border-radius:8px;font-family:var(--mono);font-size:13px;line-height:1.5;font-weight:600
+}
+.manual-field input:focus{outline:none;border-color:var(--warn);box-shadow:0 0 0 3px var(--warn-dim)}
+.mrow{display:grid;grid-template-columns:80px 1fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:10px}
+.mrow-label{font-size:13px;color:var(--muted);padding-top:20px;font-weight:700;line-height:1.5}
+.recalc-btn{
+  background:linear-gradient(180deg, #dabb7a, var(--warn));color:#241c10;border:none;padding:12px 20px;border-radius:10px;
+  font-weight:800;font-size:14px;cursor:pointer;margin-top:14px;width:100%;box-shadow:0 8px 24px rgba(216,179,109,0.14)
+}
+.recalc-btn:hover{filter:brightness(1.03)}
+.debug-toggle{
+  display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.012);border:1px solid var(--border);
+  color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:11.5px;
+  font-family:var(--mono);margin-top:12px;transition:all .2s;line-height:1.4
+}
+.debug-toggle:hover{border-color:var(--border-hi);color:var(--text)}
+.debug-box{
+  background:rgba(0,0,0,0.24);border:1px solid var(--border);border-radius:10px;padding:15px;margin-top:8px;
+  font-family:var(--mono);font-size:12px;color:var(--muted);white-space:pre-wrap;line-height:1.82;display:none
+}
+@media(max-width:960px){.inputs-grid{grid-template-columns:1fr}.results-row{grid-template-columns:1fr}}
+.hist-section{margin-top:38px}
+.hist-empty{text-align:center;color:var(--dim);font-size:14px;padding:30px;font-family:var(--mono);line-height:1.7}
+.hist-list{display:grid;gap:12px}
+.hist-item{
+  background:linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0.008)), var(--card);
+  border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;display:grid;
+  grid-template-columns:1fr auto;align-items:center;gap:16px;transition:border-color .2s,transform .15s;cursor:default;
+  box-shadow:var(--shadow-soft)
+}
+.hist-item:hover{border-color:var(--border-hi);transform:translateY(-1px)}
+.hist-item.ok-item{border-left:3px solid var(--success)}
+.hist-item.fail-item{border-left:3px solid var(--danger)}
+.hist-meta{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.hist-time{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5}
+.hist-badge{font-size:11px;font-family:var(--sans);font-weight:700;padding:4px 9px;border-radius:7px;line-height:1.3}
+.hist-badge.ok{background:var(--success-dim);color:var(--success);border:1px solid rgba(129,201,149,0.24)}
+.hist-badge.fail{background:var(--danger-dim);color:var(--danger);border:1px solid rgba(229,150,139,0.24)}
+.hist-flights{font-family:var(--mono);font-size:13.5px;color:var(--text-strong);margin-bottom:5px;line-height:1.7}
+.hist-ttl{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.7}
+.hist-ttl span{color:var(--accent-strong);font-size:14px;font-weight:700}
+.hist-btns{display:flex;flex-direction:column;gap:7px}
+.hist-load,.hist-del,.save-btn{
+  background:rgba(255,255,255,0.015);border:1px solid var(--border);color:var(--text);
+  padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:var(--sans);font-weight:700;
+  transition:all .2s;white-space:nowrap
+}
+.hist-load:hover,.save-btn:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-dim)}
+.hist-del{color:var(--muted);border-color:transparent}
+.hist-del:hover{border-color:rgba(229,150,139,0.3);color:var(--danger);background:var(--danger-dim)}
+.save-btn{display:flex;align-items:center;gap:8px;margin-top:14px}
+.save-btn.saved{border-color:var(--success);color:var(--success)}
+@media(max-width:640px){.wrap{padding:16px}header{padding:0 16px;height:auto;min-height:64px;gap:12px;flex-wrap:wrap}.rate-pill{margin-left:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><div class="logo-icon">&#9992;</div><div><div class="logo-text">Rebooking Calculator</div><div class="logo-sub">Lufthansa Group &middot; Korea Market</div></div></div>
+  <div class="rate-pill"><div class="rate-dot"></div><span class="rate-text">EUR/KRW:</span><input type="number" class="rate-input" id="rateInput" value="1750" oninput="setRate(this.value)"><span class="rate-text">KRW</span></div>
+</header>
+<div class="wrap">
+  <div class="section-label">&#51077;&#47141; &mdash; 3&#44032;&#51648; &#53581;&#49828;&#53944;&#47484; &#44033; &#52856;&#50640; &#48537;&#50668;&#45347;&#44592;</div>
+  <div class="inputs-grid">
+    <div class="input-card"><div class="ic-header"><div class="ic-num">1</div><div><div class="ic-title">일정 (Itinerary)</div><div class="ic-sub">HN·HK·TK·KK 포함 전체 세그먼트</div></div><button class="ic-clear" onclick="clearBox('t1')" title="내용 삭제">✕ 지우기</button></div><textarea id="t1" placeholder="  1  LH 719 Q 26AUG 3 ICNMUC HN20 ..."></textarea></div>
+    <div class="input-card"><div class="ic-header"><div class="ic-num">2</div><div><div class="ic-title">기존 금액 (RC Remark)</div><div class="ic-sub">FARE BASE KRW + YQ 원본</div></div><button class="ic-clear" onclick="clearBox('t2')" title="내용 삭제">✕ 지우기</button></div><textarea id="t2" placeholder="27 RC ... FARE VTOBKR6/GR/TOUR ..."></textarea></div>
+    <div class="input-card"><div class="ic-header"><div class="ic-num">3</div><div><div class="ic-title">새 일정 TST</div><div class="ic-sub">NUC·ROE·YQ 자동 추출</div></div><button class="ic-clear" onclick="clearBox('t3')" title="내용 삭제">✕ 지우기</button></div><textarea id="t3" placeholder="KRW 1322800 ... ROE1477.717582 ..."></textarea></div>
+  </div>
+  <button class="calc-btn" onclick="run()">&#128269; 분석 및 계산 시작</button>
+  <div id="results"></div>
+  <div class="hist-section" id="histSection">
+    <div class="section-label">&#128203; &#CD5C;&#ADFC; &#ACC4;&#C0B0; &#AE30;&#B85D; &mdash; &#CD5C;&#B300; 5&#D68C;</div>
+    <div id="histList"></div>
+  </div>
+</div>
+<script>
+'use strict';
+var KR_AP=new Set(['ICN','GMP','SEL','PUS','CJU','TAE','KWJ','RSU','YNY','WJU']);
+var BIZ_CLS=new Set(['P','Z','D','C','J']);
+var HK_CODES=new Set(['HK','TK','KK','HL','MX','UC','RR','SS']);
+var EUR_KRW=1750;
+
+function clearBox(id){var el=document.getElementById(id);if(el){el.value="";el.focus();}}
+
+function setRate(v){var n=parseFloat(v);if(n>100)EUR_KRW=Math.round(n/100)*100;}
+
+function parseItin(text){
+  var hn=[],hk=[];
+  var MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var STATUS_RE=/\b(HN|HK|TK|KK|HL|MX|UC|RR|SS)(\d+)/;
+  var lines=text.replace(/\r/g,'').split('\n');
+  for(var li=0;li<lines.length;li++){
+    var line=lines[li];
+    var stM=line.match(STATUS_RE);
+    if(!stM)continue;
+    var status=stM[1]==='HN'?'HN':'HK';
+    var before=line.substring(0,line.search(STATUS_RE));
+    var allF=Array.from(before.matchAll(/([A-Z]{2})\s{0,3}(\d{2,4})/g));
+    var fM=null;
+    for(var fi=0;fi<allF.length;fi++){if(!HK_CODES.has(allF[fi][1])&&allF[fi][1]!=='HN'){fM=allF[fi];break;}}
+    if(!fM)continue;
+    var date='';
+    for(var mi=0;mi<MONTHS.length;mi++){
+      var dm=line.match(new RegExp('(\\d{1,2}'+MONTHS[mi]+')'));
+      if(dm){date=dm[1];break;}
+    }
+    if(!date)continue;
+    var allSix=Array.from(before.matchAll(/([A-Z]{6})/g));
+    var route='';
+    for(var si=0;si<allSix.length;si++){
+      var r=allSix[si][1];
+      if(KR_AP.has(r.slice(0,3))||KR_AP.has(r.slice(3,6))){route=r;break;}
+    }
+    if(!route&&allSix.length>0)route=allSix[0][1];
+    if(!route)continue;
+    var dir;
+    if(KR_AP.has(route.slice(0,3)))dir='OB';
+    else if(KR_AP.has(route.slice(3,6)))dir='IB';
+    else dir='UNKNOWN';
+    var af=before.slice(before.indexOf(fM[0])+fM[0].length);
+    var cM=af.match(/\b([A-Z])\b/);
+    var obj={flight:fM[1]+fM[2],cls:cM?cM[1]:'',date:date,route:route,dir:dir,sc:stM[1]};
+    if(status==='HN')hn.push(obj);else hk.push(obj);
+  }
+  // 같은 날짜의 연결편은 같은 방향으로 그룹핑
+  function fillDir(arr){
+    // 1. 날짜별로 방향 결정 (OB/IB 중 하나라도 있으면 그 날짜 전체 확정)
+    var dateDir={};
+    for(var i=0;i<arr.length;i++){
+      if(arr[i].dir!=='UNKNOWN'&&!dateDir[arr[i].date]){
+        dateDir[arr[i].date]=arr[i].dir;
+      }
+    }
+    // 2. UNKNOWN인 구간은 같은 날짜의 확정 방향 적용
+    for(var i=0;i<arr.length;i++){
+      if(arr[i].dir==='UNKNOWN'&&dateDir[arr[i].date]){
+        arr[i].dir=dateDir[arr[i].date];
+      }
+    }
+    // 3. 그래도 UNKNOWN인 구간은 앞뒤 구간에서 상속 (fallback)
+    var last=null;
+    for(var i=0;i<arr.length;i++){if(arr[i].dir!=='UNKNOWN')last=arr[i].dir;else if(last)arr[i].dir=last;}
+    last=null;
+    for(var i=arr.length-1;i>=0;i--){if(arr[i].dir!=='UNKNOWN')last=arr[i].dir;else if(last)arr[i].dir=last;}
+  }
+  fillDir(hn);fillDir(hk);
+  return {hn:hn,hk:hk};
+}
+
+function parseOrigFare(text){
+  text=text.replace(/\r/g,'');
+  var result={ob:null,ib:null};
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var fM=lines[i].match(/FARE\s+([\w]+)\//);
+    if(!fM)continue;
+    var chunk=lines.slice(i,Math.min(i+8,lines.length)).join(' ');
+    var bM=chunk.match(/BASE\s+KRW\s*([\d.]+)/) || chunk.match(/UAL\s+FARE\s+KRW\s*([\d.]+)/) || chunk.match(/FARE\s+KRW\s*([\d.]+)/);
+    var qM=chunk.match(/YQ\s+KRW\s*([\d.]+)/);
+    if(!bM||!qM)continue;
+    var basis=fM[1],base=Math.round(parseFloat(bM[1])),yq=Math.round(parseFloat(qM[1]));
+    var routeM=chunk.match(/([A-Z]{3})\s+LH\s+([A-Z]{3})/);
+    var dir='ib';
+    if(routeM&&KR_AP.has(routeM[1]))dir='ob';
+    if(!result[dir])result[dir]={basis:basis,base:base,yq:yq};
+  }
+  return result;
+}
+
+function parseTST(text){
+  text=text.replace(/\r/g,'');
+  var fbLines=[];
+  var fbRe=/([A-Z]{3})\s+LH\s+\w\s+(\w)\s+\d{1,2}[A-Z]{3}\s+([\w]+)\//g;
+  var m;
+  while((m=fbRe.exec(text))!==null){
+    fbLines.push({dest:m[1],cls:m[2],basis:m[3],dir:KR_AP.has(m[1])?'IB':'OB'});
+  }
+  // NUC pattern A: "SEL LH MUC581.49/-FRA LH SEL313.61"
+  var nucM=/([A-Z]{3})\s+LH\s+([A-Z]{3})([\d.]+)\/-([A-Z]{3})\s+LH\s+([A-Z]{3})([\d.]+)/.exec(text);
+  var ob_nuc=0,ib_nuc=0;
+  if(nucM){
+    var s1=KR_AP.has(nucM[1]);
+    ob_nuc=parseFloat(s1?nucM[3]:nucM[6]);
+    ib_nuc=parseFloat(s1?nucM[6]:nucM[3]);
+  }else{
+    // Fallback: "LH NCE1593.67" patterns
+    var parts=Array.from(text.matchAll(/LH\s+([A-Z]{3})([\d.]+)/g));
+    if(parts.length>=2){
+      // Determine which is OB vs IB based on destination
+      var first=parts[0],last=parts[parts.length-1];
+      if(KR_AP.has(last[1])){ib_nuc=parseFloat(last[2]);ob_nuc=parseFloat(first[2]);}
+      else{ob_nuc=parseFloat(first[2]);ib_nuc=parseFloat(last[2]);}
+    }
+  }
+  var roeM=/ROE\s*([\d.]+)/.exec(text);
+  var yqM=/KRW\s+([\d,]+)\s*[-\u2013]\s*YQ/i.exec(text);
+  if(!roeM||!yqM||(!ob_nuc&&!ib_nuc))return null;
+  var ob_fb=null,ib_fb=null;
+  for(var i=0;i<fbLines.length;i++){if(fbLines[i].dir==='OB'&&!ob_fb)ob_fb=fbLines[i];if(fbLines[i].dir==='IB'&&!ib_fb)ib_fb=fbLines[i];}
+  // 모든 fare basis가 같은 방향인 경우: 첫번째=OB, 마지막=IB 할당
+  if(!ob_fb&&fbLines.length>=1){ob_fb=fbLines[0];}
+  if(!ib_fb&&fbLines.length>=2){ib_fb=fbLines[fbLines.length-1];}
+  else if(!ib_fb&&fbLines.length>=1){ib_fb=fbLines[0];}
+  return{ob_nuc:ob_nuc,ib_nuc:ib_nuc,roe:parseFloat(roeM[1]),total_yq:parseInt(yqM[1].replace(/,/g,'')),ob_basis:ob_fb?ob_fb.basis:'',ib_basis:ib_fb?ib_fb.basis:'',ib_class:ib_fb?ib_fb.cls:''};
+}
+
+function r100(n){return Math.round(n/100)*100;}
+
+function calc(itin,orig,tst,eurRate){
+  var ob_base=r100(tst.ob_nuc*tst.roe),ib_base=r100(tst.ib_nuc*tst.roe);
+  var yq_half=tst.total_yq/2;
+  var cls=(tst.ib_class||'').toUpperCase();
+  var is_biz=BIZ_CLS.has(cls);
+  var eur_tax=is_biz?30:10;
+  var envRate=Math.round(eurRate/100)*100;
+  var env_krw=eur_tax*envRate;
+  var ob_yq=yq_half,ib_yq=yq_half+env_krw;
+  var ttl_fare=ob_base+ib_base,ttl_yq=ob_yq+ib_yq,ttl=ttl_fare+ttl_yq;
+  var ob_ok=(ob_base+ob_yq)>(orig.ob.base+orig.ob.yq);
+  var ib_ok=(ib_base+ib_yq)>(orig.ib.base+orig.ib.yq);
+  return{ob_base:ob_base,ib_base:ib_base,ob_yq:ob_yq,ib_yq:ib_yq,env_krw:env_krw,eur_tax:eur_tax,is_biz:is_biz,envRate:envRate,ttl_fare:ttl_fare,ttl_yq:ttl_yq,ttl:ttl,ob_ok:ob_ok,ib_ok:ib_ok,all_ok:ob_ok&&ib_ok};
+}
+
+function validate(itin,orig,tst){
+  var e=[];
+  if(!itin.hn.length)e.push('일정 ①에서 HN(새 요청 편명)을 찾을 수 없습니다.');
+  if(!itin.hk.length)e.push('일정 ①에서 HK/TK/KK(기존 확정 편명)을 찾을 수 없습니다.');
+  if(!orig.ob)e.push('기존 금액 ②에서 OB(한국→유럽) 요금을 찾을 수 없습니다.');
+  if(!orig.ib)e.push('기존 금액 ②에서 IB(유럽→한국) 요금을 찾을 수 없습니다.');
+  if(!tst)e.push('TST ③에서 NUC / ROE / YQ를 찾을 수 없습니다.');
+  else{
+    if(!tst.ob_basis)e.push('TST ③에서 OB FARE BASIS를 찾을 수 없습니다.');
+    if(!tst.ib_basis)e.push('TST ③에서 IB FARE BASIS를 찾을 수 없습니다.');
+    if(!tst.ib_class)e.push('TST ③에서 IB Booking Class를 찾을 수 없습니다.');
+  }
+  return e;
+}
+
+function run(){
+  var t1=document.getElementById('t1').value.trim();
+  var t2=document.getElementById('t2').value.trim();
+  var t3=document.getElementById('t3').value.trim();
+  var res=document.getElementById('results');
+  if(!t1||!t2||!t3){alert('3가지 정보를 모두 입력해주세요.');return;}
+  var itin=parseItin(t1);
+  var orig=parseOrigFare(t2);
+  var tst=parseTST(t3);
+  window._li=itin;window._lo=orig;window._lt=tst;
+  var errs=validate(itin,orig,tst);
+  if(errs.length){
+    res.style.display='block';
+    res.innerHTML=renderManual(errs,itin,orig,tst);
+    return;
+  }
+  var c=calc(itin,orig,tst,EUR_KRW);
+  res.style.display='block';
+  res.innerHTML=renderResults(itin,orig,tst,c);
+}
+
+function runManual(){
+  var itin=window._li;
+  var g=function(id){var el=document.getElementById(id);return el?el.value:'';};
+  var orig={
+    ob:{basis:g('m_ob_basis'),base:parseInt(g('m_ob_base'))||0,yq:parseInt(g('m_ob_yq'))||0},
+    ib:{basis:g('m_ib_basis'),base:parseInt(g('m_ib_base'))||0,yq:parseInt(g('m_ib_yq'))||0}
+  };
+  var tst={
+    ob_nuc:parseFloat(g('m_ob_nuc'))||0,ib_nuc:parseFloat(g('m_ib_nuc'))||0,
+    ob_basis:g('m_ob_tb')||(window._lt?window._lt.ob_basis:''),
+    ib_basis:g('m_ib_tb')||(window._lt?window._lt.ib_basis:''),
+    ib_class:(g('m_ib_cls')||(window._lt?window._lt.ib_class:'')).toUpperCase(),
+    roe:parseFloat(g('m_roe'))||0,total_yq:parseInt(g('m_yq'))||0
+  };
+  if(!orig.ob.base||!orig.ib.base){alert('OB/IB 기존 금액을 입력해주세요.');return;}
+  if(!tst.ob_nuc||!tst.ib_nuc){alert('OB/IB NUC 값을 입력해주세요.');return;}
+  if(!tst.roe){alert('ROE 값을 입력해주세요.');return;}
+  if(!tst.total_yq){alert('Total YQ 값을 입력해주세요.');return;}
+  if(!tst.ib_class){alert('IB Booking Class를 입력해주세요.');return;}
+  var c=calc(itin,orig,tst,EUR_KRW);
+  document.getElementById('results').innerHTML=renderResults(itin,orig,tst,c);
+}
+
+function renderManual(errs,itin,orig,tst){
+  var needO=!orig.ob||!orig.ib;
+  var needT=!tst;
+  var h='<div class="error-card"><div class="error-title">&#9888;&#65039; 자동 파싱 실패 — 수동으로 값을 입력해주세요</div><ul class="error-list">';
+  for(var i=0;i<errs.length;i++)h+='<li>'+errs[i]+'</li>';
+  h+='</ul></div>';
+  if(needO){
+    h+='<div class="manual-card"><div class="card-title">② 기존 금액 수동 입력</div>';
+    h+='<div class="manual-warn">⚠ 섹션 ②에서 자동 추출 실패</div>';
+    h+='<div class="mrow"><div></div><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">FARE BASIS</div><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">BASE KRW</div><div style="font-size:10px;color:var(--muted);font-family:var(--mono)">YQ KRW</div></div>';
+    h+='<div class="mrow"><div class="mrow-label">OB</div><div class="manual-field"><input id="m_ob_basis" placeholder="VTOBKR6" value="'+(orig.ob?orig.ob.basis:'')+'"></div><div class="manual-field"><input id="m_ob_base" type="number" placeholder="722800" value="'+(orig.ob?orig.ob.base:'')+'"></div><div class="manual-field"><input id="m_ob_yq" type="number" placeholder="306200" value="'+(orig.ob?orig.ob.yq:'')+'"></div></div>';
+    h+='<div class="mrow"><div class="mrow-label">IB</div><div class="manual-field"><input id="m_ib_basis" placeholder="WTOBKR6" value="'+(orig.ib?orig.ib.basis:'')+'"></div><div class="manual-field"><input id="m_ib_base" type="number" placeholder="452400" value="'+(orig.ib?orig.ib.base:'')+'"></div><div class="manual-field"><input id="m_ib_yq" type="number" placeholder="323200" value="'+(orig.ib?orig.ib.yq:'')+'"></div></div>';
+    h+='</div>';
+  }
+  if(needT){
+    h+='<div class="manual-card"><div class="card-title">③ 새 TST 수동 입력</div>';
+    h+='<div class="manual-warn">⚠ 섹션 ③에서 자동 추출 실패</div>';
+    h+='<div class="manual-grid">';
+    h+='<div class="manual-field"><label>OB NUC</label><input id="m_ob_nuc" placeholder="581.49"></div>';
+    h+='<div class="manual-field"><label>OB FARE BASIS</label><input id="m_ob_tb" placeholder="QTOBKR6"></div>';
+    h+='<div class="manual-field"><label>IB NUC</label><input id="m_ib_nuc" placeholder="313.61"></div>';
+    h+='<div class="manual-field"><label>IB FARE BASIS</label><input id="m_ib_tb" placeholder="WTOBKR6"></div>';
+    h+='<div class="manual-field"><label>IB CLASS</label><input id="m_ib_cls" placeholder="W" maxlength="1" style="text-transform:uppercase"></div>';
+    h+='<div class="manual-field"><label>ROE</label><input id="m_roe" placeholder="1477.717582"></div>';
+    h+='<div class="manual-field"><label>TOTAL YQ (KRW)</label><input id="m_yq" type="number" placeholder="627000"></div>';
+    h+='</div></div>';
+  }
+  h+='<button class="recalc-btn" onclick="runManual()">&#10004; 위 값으로 계산 실행</button>';
+  h+='<button class="debug-toggle" onclick="toggleDebug()" style="margin-top:8px">&#9654; 파싱 디버그</button>';
+  h+='<div class="debug-box" id="dbg">'+JSON.stringify({itin:itin,orig:orig,tst:tst},null,2)+'</div>';
+  return h;
+}
+
+
+function getReplyFlights(itin){
+  function pick(dir){
+    var hn=itin.hn.filter(function(f){return f.dir===dir;});
+    var hk=itin.hk.filter(function(f){return f.dir===dir;});
+    return hn.length?hn:hk;
+  }
+  function line(f){
+    var flight=(f.flight||'').slice(0,2)+' '+(f.flight||'').slice(2);
+    return [flight.trim(),f.cls||'',f.date||'',f.route||''].join(' ').replace(/\s+/g,' ').trim();
+  }
+  return pick('OB').concat(pick('IB')).map(line);
+}
+
+function formatKrwLabel(n){
+  return 'KRW '+Number(n||0).toLocaleString('ko-KR');
+}
+
+function escapeHtml(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+function buildQuoteReply(itin,c){
+  var lines=getReplyFlights(itin);
+  return '문의하신 일정의 예상운임은 하기와 같습니다.\n\n'
+    + lines.join('\n')
+    + '\n\nFare '+formatKrwLabel(c.ttl_fare)
+    + '\nYQ   '+formatKrwLabel(c.ttl_yq)
+    + '\n\n변경 요청시 회신 바랍니다.';
+}
+
+function parseConfirmedRC(text){
+  text=(text||'').replace(/\r/g,' ');
+  var re=/(?:UAL\s+FARE|FARE)\s+KRW\s*([\d,.]+)\s*\+\s*YQ\s+KRW\s*([\d,.]+)/gi;
+  var fare=0,yq=0,count=0,m;
+  while((m=re.exec(text))!==null){
+    fare+=Math.round(parseFloat(String(m[1]).replace(/,/g,''))||0);
+    yq+=Math.round(parseFloat(String(m[2]).replace(/,/g,''))||0);
+    count++;
+  }
+  if(count<2)return null;
+  return {fare:fare,yq:yq};
+}
+
+function buildConfirmedReply(itin,amounts){
+  var lines=getReplyFlights(itin);
+  return '문의하신 일정이 하기의 운임으로 확약 되었습니다.\n\n'
+    + lines.join('\n')
+    + '\n\nFare '+formatKrwLabel(amounts.fare)
+    + '\nYQ   '+formatKrwLabel(amounts.yq)
+    + '\n\n* 기타 세금은 발권일 기준으로 징수해 주시기 바랍니다.';
+}
+
+function copyFromEl(btn,id){
+  var el=document.getElementById(id);
+  if(!el)return;
+  cp(btn,el.innerText.trim());
+}
+
+function generateConfirmedReply(){
+  var input=document.getElementById('confirmRcInput');
+  var output=document.getElementById('completeReplyText');
+  var note=document.getElementById('completeReplyNote');
+  if(!input||!output||!note)return;
+  var parsed=parseConfirmedRC(input.value);
+  if(!parsed){
+    output.textContent='확약된 RC 문장에서 FARE / YQ 값을 찾지 못했습니다.\n예: UAL FARE KRW1700000.0 + YQ KRW 400000.0';
+    note.textContent='안내: 완료 회신은 RC 2개 방향의 FARE / YQ를 모두 포함해야 생성됩니다.';
+    return;
+  }
+  if(!window._li){
+    output.textContent='일정 정보가 없어 완료 회신을 만들 수 없습니다.';
+    note.textContent='먼저 상단 일정/금액/TST를 넣고 계산을 실행해주세요.';
+    return;
+  }
+  output.textContent=buildConfirmedReply(window._li,parsed);
+  note.textContent='완료 회신 문안이 생성되었습니다. 아래 복사 버튼으로 바로 사용하세요.';
+}
+
+
+function renderResults(itin,orig,tst,c){
+  function fmtF(arr){
+    if(!arr.length)return '';
+    if(arr.length===1)return arr[0].flight+'/'+arr[0].date;
+    return arr.map(function(f){return f.flight;}).join(' ')+'/'+arr[0].date;
+  }
+  var hn_ob=itin.hn.filter(function(f){return f.dir==='OB';});
+  var hn_ib=itin.hn.filter(function(f){return f.dir==='IB';});
+  var hk_obs=itin.hk.filter(function(f){return f.dir==='OB';});
+  var hk_ibs=itin.hk.filter(function(f){return f.dir==='IB';});
+  // HN이 없으면 기존(HK/TK/KK) 편명 사용
+  var obF=hn_ob.length?fmtF(hn_ob):fmtF(hk_obs);
+  var ibF=hn_ib.length?fmtF(hn_ib):fmtF(hk_ibs);
+  var rB=obF,rC=tst.ob_basis+'/GR KRW'+c.ob_base+' YQ KRW'+c.ob_yq;
+  var rE=ibF,rF=tst.ib_basis+'/GR KRW'+c.ib_base+' YQ KRW'+c.ib_yq;
+  var rJ1='KRW'+c.ttl_fare,rJ2='KRW'+c.ttl_yq,rJ3='KRW'+c.ttl;
+  var quoteReply=buildQuoteReply(itin,c);
+  function F(n){return 'KRW '+Number(n).toLocaleString('ko-KR');}
+  function CH(ok){return ok?'<span class="chip ok">&#9650; 가능</span>':'<span class="chip fail">&#9660; 불가</span>';}
+  var h='';
+  if(c.all_ok)h+='<div class="banner ok">&#10004; 변경 가능 — OB / IB 모두 새 요금(BASE+YQ)이 기존보다 높습니다</div>';
+  else h+='<div class="banner fail">&#9940; 변경 불가 — '+(!c.ob_ok?'OB ':'')+(!c.ib_ok?'IB ':'')+'구간 새 요금이 기존보다 낮거나 같습니다</div>';
+  h+='<div class="results-row"><div class="card"><div class="card-title">요금 비교 (BASE+YQ 합산 기준)</div>';
+  h+='<table class="fare-tbl"><thead><tr><th>구간</th><th>기존 BASE+YQ</th><th>새 BASE</th><th>새 YQ</th><th>새 합계</th><th></th></tr></thead><tbody>';
+  h+='<tr><td>OB</td><td>'+F(orig.ob.base+orig.ob.yq)+'</td><td>'+F(c.ob_base)+'</td><td>'+F(c.ob_yq)+'</td><td class="nv">'+F(c.ob_base+c.ob_yq)+'</td><td>'+CH(c.ob_ok)+'</td></tr>';
+  h+='<tr><td>IB</td><td>'+F(orig.ib.base+orig.ib.yq)+'</td><td>'+F(c.ib_base)+'</td><td>'+F(c.ib_yq)+'</td><td class="nv">'+F(c.ib_base+c.ib_yq)+'</td><td>'+CH(c.ib_ok)+'</td></tr>';
+  h+='</tbody></table><div class="divider"></div>';
+  h+='<div class="ir"><span class="il">TTL BASE</span><span class="iv">'+F(c.ttl_fare)+'</span></div>';
+  h+='<div class="ir"><span class="il">TTL YQ/YR</span><span class="iv">'+F(c.ttl_yq)+'</span></div>';
+  h+='<div class="ir"><span class="il" style="font-weight:600">최종 합계</span><span class="iv hi">'+F(c.ttl)+'</span></div></div>';
+  h+='<div class="card"><div class="card-title">계산 상세</div>';
+  h+='<div class="ir"><span class="il">적용 환율 (100원 반올림)</span><span class="iv">1 EUR = '+EUR_KRW.toLocaleString()+' KRW</span></div>';
+  h+='<div class="ir"><span class="il">OB BASE NUC '+tst.ob_nuc+' × ROE '+tst.roe.toFixed(3)+'</span><span class="iv">= '+F(c.ob_base)+'</span></div>';
+  h+='<div class="ir"><span class="il">IB BASE NUC '+tst.ib_nuc+' × ROE '+tst.roe.toFixed(3)+'</span><span class="iv">= '+F(c.ib_base)+'</span></div>';
+  h+='<div class="ir"><span class="il">YQ (공통) '+F(tst.total_yq)+' ÷ 2</span><span class="iv">= '+F(c.ob_yq)+'</span></div>';
+  h+='<div class="ir"><span class="il">환경세 (IB) '+(c.is_biz?'비즈':'이코')+' '+tst.ib_class+' → EUR'+c.eur_tax+' × '+c.envRate.toLocaleString()+'</span><span class="iv">= '+F(c.env_krw)+'</span></div>';
+  h+='<div class="ir" style="background:var(--accent-dim);margin:4px -4px;padding:8px 10px;border-radius:5px;border-bottom:none"><span class="il">IB YQ 합계 '+F(c.ob_yq)+' + '+F(c.env_krw)+'</span><span class="iv" style="color:var(--accent)">= '+F(c.ib_yq)+'</span></div>';
+  h+='</div></div>';
+  // REMARK
+  h+='<div class="remark-card"><div class="card-title">REBOOKING REQUEST — 생성된 REMARK</div><div class="remark-grid">';
+  if(rB)h+=RR('B',rB,'DIRECTION 1 · OB');
+  else h+='<div class="rr" style="border-color:var(--danger)"><div class="rk" style="color:var(--danger)">B</div><div><div style="color:var(--danger);font-size:13px">⚠ HN 편명 인식 실패</div></div></div>';
+  h+=RR('C',rC,'FBC/GR · YQ — DIRECTION 1 · OB');
+  h+=RR('E',rE,'DIRECTION 2 · IB');
+  h+=RR('F',rF,'FBC/GR · YQ — DIRECTION 2 · IB');
+  h+='<div class="rr rr-j"><div class="rk">J</div><div><div class="jw"><div class="ji"><div class="jl">TTL FARE</div><div class="jv">'+rJ1+'</div></div><div class="ji"><div class="jl">PLUS YQ/YR</div><div class="jv">'+rJ2+'</div></div><div class="ji"><div class="jl">TTL</div><div class="jv ttl">'+rJ3+'</div></div></div><div class="rd" style="margin-top:6px">CURR AMOUNTS FOR TTL FARE · TTL YQ/YR · SUM TTL FARE + TTL YQ/YR</div></div>';
+  h+='<div class="jb"><button class="cb" onclick="cp(this,\''+rJ1+'\')">TTL FARE 복사</button><button class="cb" onclick="cp(this,\''+rJ2+'\')">YQ/YR 복사</button><button class="cb" onclick="cp(this,\''+rJ3+'\')">TTL 복사</button></div></div>';
+  h+='</div>';
+  h+='<div class="email-tools">';
+  h+='<div class="email-card"><div class="email-head"><div><div class="email-title">이메일 회신 포맷 1 — 견적 회신</div><div class="email-sub">현재 계산 결과의 TTL BASE / TTL YQ를 사용해 회신 문안을 자동 생성합니다.</div></div><button class="email-btn" onclick="copyFromEl(this,\'quoteReplyText\')">복사</button></div><div class="email-box" id="quoteReplyText">'+escapeHtml(quoteReply)+'</div></div>';
+  h+='<div class="email-card"><div class="email-head"><div><div class="email-title">이메일 회신 포맷 2 — 완료 회신</div><div class="email-sub">확약된 RC 문장을 붙여넣으면 Fare / YQ를 합산해 완료 회신 문안을 만듭니다.</div></div></div>';
+  h+='<textarea class="email-input" id="confirmRcInput" placeholder="확약된 RC 문장을 여기에 붙여넣어 주세요.&#10;예: UAL FARE KRW1700000.0 + YQ KRW 400000.0 ..."></textarea>';
+  h+='<div class="email-actions"><button class="email-btn primary" onclick="generateConfirmedReply()">완료 회신 생성</button><button class="email-btn" onclick="copyFromEl(this,\'completeReplyText\')">복사</button></div>';
+  h+='<div class="email-note" id="completeReplyNote">안내: RC 2개 방향의 FARE / YQ가 모두 포함되어야 완료 회신이 생성됩니다.</div>';
+  h+='<div class="email-box" id="completeReplyText">확약된 RC 문장을 넣고 "완료 회신 생성" 버튼을 누르세요.</div></div>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:10px;align-items:center;margin-top:14px"><button class="save-btn" id="saveBtn" onclick="saveRecord()">&#128190; 이 계산 저장</button></div>';
+  h+='<button class="debug-toggle" onclick="toggleDebug()">&#9654; 파싱 디버그</button>';
+  h+='<div class="debug-box" id="dbg">'+JSON.stringify({itin:itin,orig:orig,tst:tst,calc:{ob_base:c.ob_base,ib_base:c.ib_base,ob_yq:c.ob_yq,ib_yq:c.ib_yq,env:c.env_krw,ttl:c.ttl}},null,2)+'</div>';
+  h+='</div>';
+  return h;
+}
+
+function RR(key,val,desc){
+  var sv=val.replace(/'/g,"\\'");
+  return '<div class="rr"><div class="rk">'+key+'</div><div><div class="rv">'+val+'</div><div class="rd">'+desc+'</div></div><button class="cb" onclick="cp(this,\''+sv+'\')">복사</button></div>';
+}
+
+function cp(btn,text){
+  try{navigator.clipboard.writeText(text);}
+  catch(e){var t=document.createElement('textarea');t.value=text;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}
+  var old=btn.textContent;btn.textContent='✓ 완료';btn.classList.add('done');
+  setTimeout(function(){btn.textContent=old;btn.classList.remove('done');},2000);
+}
+
+function toggleDebug(){
+  var b=document.getElementById('dbg');
+  b.style.display=b.style.display==='block'?'none':'block';
+}
+
+/* ═══ HISTORY ═══ */
+var HIST_KEY='lh_rebooking_history';
+var MAX_HIST=5;
+
+function loadHistory(){
+  try{return JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}
+  catch(e){return [];}
+}
+
+function saveHistory(arr){
+  try{localStorage.setItem(HIST_KEY,JSON.stringify(arr));}
+  catch(e){}
+}
+
+function saveRecord(){
+  var itin=window._li,orig=window._lo,tst=window._lt;
+  var t1=document.getElementById('t1').value.trim();
+  var t2=document.getElementById('t2').value.trim();
+  var t3=document.getElementById('t3').value.trim();
+  if(!itin||!orig||!tst){return;}
+  var c=calc(itin,orig,tst,EUR_KRW);
+  // 리마크 값
+  function fmtF(arr){if(!arr.length)return '';if(arr.length===1)return arr[0].flight+'/'+arr[0].date;return arr.map(function(f){return f.flight;}).join(' ')+'/'+arr[0].date;}
+  var hn_ob=itin.hn.filter(function(f){return f.dir==='OB';});
+  var hn_ib=itin.hn.filter(function(f){return f.dir==='IB';});
+  var hk_obs=itin.hk.filter(function(f){return f.dir==='OB';});
+  var hk_ibs=itin.hk.filter(function(f){return f.dir==='IB';});
+  var obF=hn_ob.length?fmtF(hn_ob):fmtF(hk_obs);
+  var ibF=hn_ib.length?fmtF(hn_ib):fmtF(hk_ibs);
+  var record={
+    id: Date.now(),
+    time: new Date().toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}),
+    all_ok: c.all_ok,
+    rB: obF,
+    rE: ibF,
+    rC: tst.ob_basis+'/GR KRW'+c.ob_base+' YQ KRW'+c.ob_yq,
+    rF: tst.ib_basis+'/GR KRW'+c.ib_base+' YQ KRW'+c.ib_yq,
+    rJ1:'KRW'+c.ttl_fare, rJ2:'KRW'+c.ttl_yq, rJ3:'KRW'+c.ttl,
+    ttl: c.ttl,
+    eur: EUR_KRW,
+    // 입력칸 복원용
+    t1:t1, t2:t2, t3:t3
+  };
+  var arr=loadHistory();
+  arr.unshift(record);
+  if(arr.length>MAX_HIST)arr=arr.slice(0,MAX_HIST);
+  saveHistory(arr);
+  renderHistory();
+  // 버튼 상태 변경
+  var btn=document.getElementById('saveBtn');
+  if(btn){btn.textContent='✓ 저장됨';btn.classList.add('saved');
+    setTimeout(function(){btn.textContent='💾 이 계산 저장';btn.classList.remove('saved');},2000);}
+}
+
+function deleteRecord(id){
+  var arr=loadHistory().filter(function(r){return r.id!==id;});
+  saveHistory(arr);
+  renderHistory();
+}
+
+function restoreRecord(id){
+  var arr=loadHistory();
+  var rec=null;
+  for(var i=0;i<arr.length;i++){if(arr[i].id===id){rec=arr[i];break;}}
+  if(!rec)return;
+  // 입력칸 복원
+  document.getElementById('t1').value=rec.t1;
+  document.getElementById('t2').value=rec.t2;
+  document.getElementById('t3').value=rec.t3;
+  // 환율 복원
+  EUR_KRW=rec.eur;
+  document.getElementById('rateInput').value=rec.eur;
+  // 계산 재실행
+  run();
+  // 상단으로 스크롤
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderHistory(){
+  var arr=loadHistory();
+  var el=document.getElementById('histList');
+  if(!el)return;
+  if(!arr.length){
+    el.innerHTML='<div class="hist-empty">저장된 기록이 없습니다</div>';
+    return;
+  }
+  var h='<div class="hist-list">';
+  for(var i=0;i<arr.length;i++){
+    var r=arr[i];
+    var cls=r.all_ok?'ok-item':'fail-item';
+    var badge=r.all_ok?'<span class="hist-badge ok">✅ 변경가능</span>':'<span class="hist-badge fail">⛔ 변경불가</span>';
+    var ttlF='KRW '+Number(r.ttl).toLocaleString('ko-KR');
+    h+='<div class="hist-item '+cls+'">';
+    h+='<div>';
+    h+='<div class="hist-meta"><span class="hist-time">'+r.time+'</span>'+badge+'</div>';
+    h+='<div class="hist-flights">B: '+(r.rB||'-')+'&nbsp;&nbsp;E: '+(r.rE||'-')+'</div>';
+    h+='<div class="hist-ttl">TTL: <span>'+ttlF+'</span>&nbsp;·&nbsp;EUR/KRW '+r.eur.toLocaleString()+'</div>';
+    h+='</div>';
+    h+='<div class="hist-btns">';
+    h+='<button class="hist-load" onclick="restoreRecord('+r.id+')">↩ 불러오기</button>';
+    h+='<button class="hist-del" onclick="deleteRecord('+r.id+')">삭제</button>';
+    h+='</div>';
+    h+='</div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+
+// 페이지 로드 시 기록 표시
+renderHistory();
+</script>
+</body>
+</html>
